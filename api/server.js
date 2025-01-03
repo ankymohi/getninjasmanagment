@@ -1,30 +1,37 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+let isConnected = false;
+
 // Middleware
+app.use(express.json());
 app.use(cors({
   origin: "https://getninjasmanagment-emuy.vercel.app",
   methods: ["POST", "GET", "PUT", "DELETE"],
   credentials: true,
 }));
 
-app.use(bodyParser.json());
-
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+async function connectToDatabase() {
+  if (!isConnected) {
+    try {
+      await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      isConnected = true;
+      console.log('MongoDB connected');
+    } catch (err) {
+      console.error('Error connecting to MongoDB:', err.message);
+      throw new Error('Database connection error');
+    }
+  }
+}
 
 // Schema & Model
 const contactSchema = new mongoose.Schema({
@@ -41,7 +48,8 @@ const Contact = mongoose.model('Contact', contactSchema);
 // Routes
 app.get('/api/contacts', async (req, res) => {
   try {
-    const contacts = await Contact.find();
+    await connectToDatabase();
+    const contacts = await Contact.find().limit(100); // Limit for performance
     res.json(contacts);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch contacts' });
@@ -50,6 +58,7 @@ app.get('/api/contacts', async (req, res) => {
 
 app.post('/api/contacts', async (req, res) => {
   try {
+    await connectToDatabase();
     const newContact = new Contact(req.body);
     await newContact.save();
     res.status(201).json(newContact);
@@ -60,6 +69,7 @@ app.post('/api/contacts', async (req, res) => {
 
 app.put('/api/contacts/:id', async (req, res) => {
   try {
+    await connectToDatabase();
     const updatedContact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedContact);
   } catch (err) {
@@ -69,6 +79,7 @@ app.put('/api/contacts/:id', async (req, res) => {
 
 app.delete('/api/contacts/:id', async (req, res) => {
   try {
+    await connectToDatabase();
     await Contact.findByIdAndDelete(req.params.id);
     res.json({ message: 'Contact deleted successfully' });
   } catch (err) {
@@ -76,20 +87,12 @@ app.delete('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// Update an existing contact
-app.put('/api/contacts/:id', async (req, res) => {
-    try {
-      const updatedContact = await Contact.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true } // Return the updated document
-      );
-      res.json(updatedContact);
-    } catch (err) {
-      res.status(500).send('Server error');
-    }
-  });
-  
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
