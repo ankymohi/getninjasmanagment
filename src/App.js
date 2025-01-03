@@ -14,7 +14,7 @@ const App = () => {
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/contacts');
+        const res = await axios.get('https://getninjasmanagment.vercel.app/api/contacts');
         setContacts(res.data);
       } catch (err) {
         console.error('Error fetching contacts:', err);
@@ -44,7 +44,7 @@ const App = () => {
   // Function to add a new contact
   const addContact = async (contact) => {
     try {
-      const res = await axios.post('http://localhost:5000/api/contacts', contact);
+      const res = await axios.post('https://getninjasmanagment.vercel.app/api/contacts', contact);
       setContacts((prevContacts) => [...prevContacts, res.data]);
     } catch (err) {
       console.error('Error adding contact:', err);
