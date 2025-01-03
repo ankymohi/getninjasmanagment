@@ -96,7 +96,7 @@ const App = () => {
       <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 5 }}>
         <Container>
           <Typography variant="h3" align="center" gutterBottom>
-            GetNinjas Profit Management
+            GetNinjas Profit Management him
           </Typography>
 
           <Grid container spacing={4}>
