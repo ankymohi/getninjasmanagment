@@ -8,24 +8,13 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-let isConnected = false;
-
-// MongoDB Connection
-async function connectToDatabase() {
-  if (!isConnected) {
-    try {
-      await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-      isConnected = true;
-      console.log('MongoDB connected');
-    } catch (err) {
-      console.error('Error connecting to MongoDB:', err);
-      throw new Error('Database connection failed');
-    }
-  }
-}
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 // Middleware
 app.use(cors({
