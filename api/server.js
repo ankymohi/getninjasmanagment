@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const helmet = require('helmet');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,7 +33,7 @@ app.use(cors({
   methods: ["POST", "GET", "PUT", "DELETE"],
   credentials: true,
 }));
-app.use(helmet());
+
 app.use(bodyParser.json());
 
 // Schema & Model
